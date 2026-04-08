@@ -1,42 +1,107 @@
-# Real Estate RAG Assistant
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <h3 align="center">Real Estate RAG Assistant</h3>
 
-Real Estate RAG Assistant is a local-first research tool for analyzing real estate PDFs such as market reports, homebuying guides, rental outlooks, and housing data publications. Users upload PDF files directly through the website, ingest them into a local vector database, and then ask natural language questions through a React interface that returns grounded answers with source citations.
+  <p align="center">
+    A local-first research app that lets users upload real estate PDFs, ingest them into ChromaDB, and ask grounded questions with source citations.
+  </p>
+</div>
 
 ## Demo
 
 [Watch the demo video](./demo-for-project.mp4)
 
-## What Is RAG?
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
-RAG stands for Retrieval-Augmented Generation.
+Real Estate RAG Assistant helps users explore housing and market documents through a clean chat interface. Users upload PDF reports, homebuying guides, and market analyses directly in the app, ingest them into a local vector database, and then ask natural language questions.
 
-In plain English, it means:
+The app retrieves the most relevant document chunks, sends them to Groq for answer generation, and returns a concise response with supporting source citations. It is designed to run locally, with free local embeddings and persistent ChromaDB storage.
 
-1. Your documents are broken into smaller chunks.
-2. Those chunks are converted into embeddings, which are numerical representations of meaning.
-3. When you ask a question, the app finds the most relevant chunks first.
-4. The LLM answers using those retrieved chunks instead of guessing.
+### Built With
 
-That makes responses more grounded, more traceable, and much more useful for document-heavy research workflows.
+* [![Python][Python.org]][Python-url]
+* [![FastAPI][FastAPI.tiangolo.com]][FastAPI-url]
+* [![React][React.dev]][React-url]
+* [![Vite][Vite.dev]][Vite-url]
+* [![LangChain][LangChain]][LangChain-url]
+* [![Groq][Groq.com]][Groq-url]
+* [![ChromaDB][ChromaDB]][ChromaDB-url]
+* [![Tailwind CSS][TailwindCSS.com]][TailwindCSS-url]
 
-## Features
+<!-- GETTING STARTED -->
+## Getting Started
 
-- Direct PDF upload through the website
-- User-only document flow via `docs/uploads/`
-- Persistent local ChromaDB storage
-- Hugging Face local embeddings with `sentence-transformers/all-MiniLM-L6-v2`
-- Groq-powered answer generation
-- Source-aware answers with document filename, page number, and chunk preview
-- FastAPI backend and React + Vite frontend
-- Re-ingestion protection so unchanged PDFs do not get duplicated
+### Prerequisites
+
+* Python 3.10 or later
+* Node.js 18 or later
+* A [Groq API key](https://console.groq.com)
+
+### Installation
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/your-username/real-estate-rag-assistant.git
+   cd real-estate-rag-assistant
+   ```
+2. Set up the backend
+   ```sh
+   cd backend
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   cp .env.example .env
+   ```
+3. Add your Groq credentials to `backend/.env`
+   ```sh
+   GROQ_API_KEY=your_groq_api_key
+   GROQ_MODEL=llama-3.1-8b-instant
+   BACKEND_CORS_ORIGINS=http://localhost:5173
+   ```
+4. Start the backend
+   ```sh
+   python -m uvicorn main:app --reload
+   ```
+5. In a new terminal, set up the frontend
+   ```sh
+   cd frontend
+   npm install
+   npm run dev
+   ```
+6. Open in your browser
+   ```text
+   http://localhost:5173
+   ```
+
+<!-- USAGE -->
+## Usage
+
+1. Open the app in your browser.
+2. Upload one or more PDF files in the sidebar.
+3. Click `Ingest Documents`.
+4. Wait for the ingestion success message.
+5. Ask questions in the chat panel.
+6. Review the grounded answer and expand `Show Sources` when needed.
+
+<!-- EXAMPLE QUESTIONS -->
+## Example Questions
+
+* What does the rental report say about year-over-year rent growth?
+* Which document discusses home affordability constraints?
+* Summarize the latest housing price trends from the FHFA documents.
+* What are the main risks for first-time homebuyers mentioned in these guides?
+* Which report mentions inventory changes or supply constraints?
 
 ## Free Real Estate PDF Sources
 
-- Zillow Research: https://www.zillow.com/research/
-- National Association of Realtors (NAR): https://www.nar.realtor/research-and-statistics
-- HUD: https://www.hud.gov/
-- FHFA: https://www.fhfa.gov/
+* [Zillow Research](https://www.zillow.com/research/)
+* [National Association of Realtors (NAR)](https://www.nar.realtor/research-and-statistics)
+* [HUD](https://www.hud.gov/)
+* [FHFA](https://www.fhfa.gov/)
 
+<!-- PROJECT STRUCTURE -->
 ## Project Structure
 
 ```text
@@ -54,8 +119,7 @@ real-estate-rag-assistant/
 │   │   │   ├── ChatWindow.jsx
 │   │   │   ├── MessageBubble.jsx
 │   │   │   ├── SourceCard.jsx
-│   │   │   ├── DocumentManager.jsx
-│   │   │   └── ResearchGuide.jsx
+│   │   │   └── DocumentManager.jsx
 │   │   ├── App.jsx
 │   │   ├── main.jsx
 │   │   └── index.css
@@ -67,123 +131,42 @@ real-estate-rag-assistant/
 ├── docs/
 │   └── uploads/
 ├── chroma_db/
+├── demo-for-project.mp4
 ├── .gitignore
 └── README.md
 ```
 
-## Local Setup
-
-### Backend
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-python -m uvicorn main:app --reload
-```
-
-Example `backend/.env`:
-
-```env
-GROQ_API_KEY=your_groq_api_key_here
-GROQ_MODEL=llama-3.1-8b-instant
-BACKEND_CORS_ORIGINS=http://localhost:5173
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs on `http://localhost:5173` and the backend runs on `http://localhost:8000`.
-
-## How To Use The App
-
-1. Start the backend and frontend.
-2. Open the React app in the browser.
-3. Upload one or more PDF files in the sidebar.
-4. Review the uploaded files in the list.
-5. Click `Ingest Documents`.
-6. Wait for the success message.
-7. Ask questions in the chat panel.
-
-## Example Questions
-
-- What does the rental report say about year-over-year rent growth?
-- Which document discusses home affordability constraints?
-- Summarize the latest housing price trends from the FHFA documents.
-- What are the main risks for first-time homebuyers mentioned in these guides?
-- Which report mentions inventory changes or supply constraints?
-
-## Technologies
-
-- FastAPI
-- LangChain
-- ChromaDB
-- Hugging Face sentence-transformers
-- Groq API
-- React
-- Vite
-- Tailwind CSS
-- Axios
-- PyMuPDF
-- python-dotenv
-- python-multipart
-
 ## How It Works
 
-### 1. Upload
-
-Users upload PDF files through the website. The backend saves them locally into `docs/uploads/`.
-
-### 2. Ingest
-
-The backend scans the uploaded PDFs and extracts text page by page using PyMuPDF.
-
-### 3. Embed
-
-Each page is split into overlapping chunks, then converted into embeddings using `sentence-transformers/all-MiniLM-L6-v2`, running locally on the backend machine.
-
-### 4. Retrieve
-
-When a user asks a question, the app searches the local ChromaDB vector database for the most semantically relevant chunks.
-
-### 5. Generate
-
-The retrieved chunks are sent to Groq with a strict prompt telling the model to answer only from the provided context and to say when the documents do not contain the answer.
+1. Upload: users upload PDFs directly through the app.
+2. Ingest: the backend parses the uploaded PDFs with PyMuPDF.
+3. Embed: the text is chunked and embedded locally with `sentence-transformers/all-MiniLM-L6-v2`.
+4. Retrieve: relevant chunks are pulled from ChromaDB.
+5. Generate: Groq answers using only the retrieved context.
 
 ## API Endpoints
 
-- `POST /upload-documents` -> upload one or more PDF files to local storage
-- `POST /ask` -> `{ question }` => `{ answer, sources }`
-- `POST /ingest` -> triggers ingestion for uploaded PDFs
-- `GET /stats` -> returns total documents, chunks, embedding model, and last ingestion time
-- `GET /documents` -> returns the uploaded PDF filenames and file sizes
-- `GET /health` -> simple health check
+* `POST /upload-documents` -> upload one or more PDF files
+* `POST /ask` -> ask a question and receive `{ answer, sources }`
+* `POST /ingest` -> ingest uploaded PDFs into ChromaDB
+* `GET /documents` -> list uploaded PDFs
+* `GET /stats` -> return document and chunk counts
+* `GET /health` -> health check
 
-## Environment Variables
-
-### Backend
-
-- `GROQ_API_KEY` -> your Groq API key
-- `GROQ_MODEL` -> defaults to `llama-3.1-8b-instant`
-- `BACKEND_CORS_ORIGINS` -> allowed frontend origin, default `http://localhost:5173`
-
-## Screenshots
-
-Add screenshots here after running the app:
-
-- Upload flow
-- Ingestion success state
-- Chat answer with sources expanded
-
-## Notes
-
-- Uploaded PDFs are stored locally in `docs/uploads/`.
-- Embeddings run locally on the backend and do not require a paid embeddings API.
-- The only external key required is `GROQ_API_KEY` for answer generation.
+<!-- MARKDOWN LINKS & IMAGES -->
+[Python.org]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
+[Python-url]: https://python.org
+[FastAPI.tiangolo.com]: https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white
+[FastAPI-url]: https://fastapi.tiangolo.com
+[React.dev]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React-url]: https://react.dev
+[Vite.dev]: https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white
+[Vite-url]: https://vite.dev
+[LangChain]: https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white
+[LangChain-url]: https://www.langchain.com/
+[Groq.com]: https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logoColor=white
+[Groq-url]: https://groq.com
+[ChromaDB]: https://img.shields.io/badge/ChromaDB-E85D4A?style=for-the-badge&logoColor=white
+[ChromaDB-url]: https://www.trychroma.com
+[TailwindCSS.com]: https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white
+[TailwindCSS-url]: https://tailwindcss.com
