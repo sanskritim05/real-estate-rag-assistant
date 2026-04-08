@@ -43,7 +43,7 @@ The app retrieves the most relevant document chunks, sends them to Groq for answ
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/your-username/real-estate-rag-assistant.git
+   git clone https://github.com/sanskritim05/real-estate-rag-assistant
    cd real-estate-rag-assistant
    ```
 2. Set up the backend
