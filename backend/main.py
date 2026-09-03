@@ -18,11 +18,17 @@ app = FastAPI(title="Real Estate RAG Assistant API")
 
 def get_allowed_origins() -> list[str]:
     raw_value = os.getenv("BACKEND_CORS_ORIGINS", "http://localhost:5173")
-    return [origin.strip() for origin in raw_value.split(",") if origin.strip()]
+    return [origin.strip().rstrip("/") for origin in raw_value.split(",") if origin.strip()]
+
+
+def get_allowed_origin_regex() -> str | None:
+    raw_value = os.getenv("BACKEND_CORS_ORIGIN_REGEX", r"https://.*\.vercel\.app")
+    return raw_value.strip() or None
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_allowed_origins(),
+    allow_origin_regex=get_allowed_origin_regex(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

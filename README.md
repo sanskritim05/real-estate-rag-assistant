@@ -76,6 +76,49 @@ The app retrieves the most relevant document chunks, sends them to Groq for answ
    http://localhost:5173
    ```
 
+<!-- DEPLOY -->
+## Deploy
+
+Use **Render for the API** and **Vercel for the UI**. Deploy Render first so you have an API URL to give Vercel.
+
+### 1. Render (backend)
+
+The API writes PDFs and ChromaDB to disk, so it needs a [persistent disk](https://render.com/docs/disks) (Starter plan or higher).
+
+1. Push this repo to GitHub.
+2. In [Render](https://dashboard.render.com), create a **Blueprint** from the repo. It will read `render.yaml`.
+   Or create a **Web Service** manually:
+   - Root directory: `backend`
+   - Build: `pip install -r requirements.txt`
+   - Start: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - Instance: Starter (or larger if ingest runs out of memory)
+3. Add a 1 GB disk mounted at `/var/data`.
+4. Set environment variables:
+   ```text
+   GROQ_API_KEY=your_groq_api_key
+   GROQ_MODEL=llama-3.1-8b-instant
+   DATA_DIR=/var/data
+   BACKEND_CORS_ORIGINS=https://your-app.vercel.app
+   BACKEND_CORS_ORIGIN_REGEX=https://.*\.vercel\.app
+   ```
+   If you do not have the Vercel URL yet, add it after the frontend deploy and restart the service.
+5. Copy the Render URL, for example `https://real-estate-rag-api.onrender.com`.
+6. Open `/health` on that URL and confirm it returns `{"status":"ok"}`. The first boot can take a few minutes while the embedding model downloads.
+
+### 2. Vercel (frontend)
+
+1. Import the same GitHub repo in [Vercel](https://vercel.com/new). `vercel.json` already builds `frontend/`.
+2. Add this **Production** environment variable:
+   ```text
+   VITE_API_BASE_URL=https://real-estate-rag-api.onrender.com
+   ```
+   Use your real Render URL. No trailing slash.
+3. Deploy. Copy the Vercel URL (for example `https://your-app.vercel.app`).
+4. Go back to Render and set `BACKEND_CORS_ORIGINS` to that Vercel URL, then restart the API.
+5. Redeploy Vercel if you change `VITE_API_BASE_URL`. Vite inlines it at **build** time.
+
+Local development is unchanged: backend on port 8000, frontend on 5173.
+
 <!-- USAGE -->
 ## Usage
 
@@ -107,33 +150,27 @@ The app retrieves the most relevant document chunks, sends them to Groq for answ
 
 ```text
 real-estate-rag-assistant/
-├── backend/
-│   ├── main.py
-│   ├── ingest.py
-│   ├── retriever.py
-│   ├── rag_chain.py
+├── backend/                 API (FastAPI)
+│   ├── main.py              routes
+│   ├── ingest.py            PDF upload + chunking + embeddings
+│   ├── retriever.py         ChromaDB search
+│   ├── rag_chain.py         Groq answer generation
+│   ├── data/                runtime files (not committed)
+│   │   ├── uploads/         user PDFs
+│   │   └── chroma/          vector store
 │   ├── .env.example
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChatWindow.jsx
-│   │   │   ├── MessageBubble.jsx
-│   │   │   ├── SourceCard.jsx
-│   │   │   └── DocumentManager.jsx
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── index.html
-│   ├── package.json
-│   ├── postcss.config.js
-│   ├── tailwind.config.js
-│   └── vite.config.js
-├── docs/
-│   └── uploads/
-├── chroma_db/
+│   ├── requirements.txt
+│   └── runtime.txt
+├── frontend/                UI (Vite + React)
+│   ├── public/favicon.svg
+│   └── src/
+│       ├── components/      sidebar, chat, sources
+│       ├── lib/api.ts       backend client
+│       ├── App.tsx
+│       └── styles.css
+├── vercel.json              Vercel → frontend
+├── render.yaml              Render → backend
 ├── demo-for-project.mp4
-├── .gitignore
 └── README.md
 ```
 

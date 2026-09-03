@@ -5,7 +5,15 @@ __pycache__/
 .venv/
 node_modules/
 dist/
-chroma_db/*
-!chroma_db/.gitkeep
+.vercel
+
 backend/.env
 frontend/.env
+
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
+backend/data/chroma/*
+!backend/data/chroma/.gitkeep
+
+chroma_db/
+docs/

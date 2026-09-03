@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -20,10 +21,11 @@ from langchain_huggingface import HuggingFaceEmbeddings
 ENV_FILE = Path(__file__).resolve().parent / ".env"
 load_dotenv(ENV_FILE)
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DOCS_DIR = PROJECT_ROOT / "docs"
-USER_DOCS_DIR = DOCS_DIR / "uploads"
-CHROMA_DIR = PROJECT_ROOT / "chroma_db"
+BACKEND_DIR = Path(__file__).resolve().parent
+_data_dir = os.getenv("DATA_DIR", "").strip()
+DATA_DIR = Path(_data_dir or (BACKEND_DIR / "data")).expanduser().resolve()
+USER_DOCS_DIR = DATA_DIR / "uploads"
+CHROMA_DIR = DATA_DIR / "chroma"
 STATE_FILE = CHROMA_DIR / "ingestion_state.json"
 COLLECTION_NAME = "real_estate_documents"
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
