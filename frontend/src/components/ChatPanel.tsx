@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBanner, type Status } from "@/components/StatusBanner";
 import { SourceCard, groupSources } from "@/components/SourceCard";
 import { askQuestion, TimeoutError, type SourceItem } from "@/lib/api";
+import { retrieveChunks } from "@/lib/retrieve";
 import { cn } from "@/lib/utils";
 
 type Message = {
@@ -75,7 +76,7 @@ function AssistantExtras({ message }: { message: Message }) {
   );
 }
 
-export function ChatPanel() {
+export function ChatPanel({ chunks }: { chunks: SourceItem[] }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [waiting, setWaiting] = useState(false);
@@ -106,7 +107,7 @@ export function ChatPanel() {
     setMessages((current) => [...current, { id: crypto.randomUUID(), role: "user", content: question }]);
     setWaiting(true);
     try {
-      const res = await askQuestion(question);
+      const res = await askQuestion(question, retrieveChunks(question, chunks));
       setMessages((current) => [
         ...current,
         {
@@ -121,8 +122,8 @@ export function ChatPanel() {
         tone: "error",
         message:
           err instanceof TimeoutError
-            ? "The request took too long. Make sure the backend is running, documents are ingested, and your Groq key is set."
-            : `The assistant could not answer right now. Check that the backend is running and your Groq key is set.${
+            ? "The request took too long. Make sure documents are ingested and GROQ_API_KEY is set."
+            : `The assistant could not answer right now. Check that GROQ_API_KEY is set.${
                 err instanceof Error && err.message ? ` (${err.message})` : ""
               }`,
       });

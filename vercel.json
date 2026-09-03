@@ -3,9 +3,14 @@
   "installCommand": "npm install --include=dev --prefix frontend",
   "buildCommand": "npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/ask.js": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
     {
-      "source": "/((?!assets/).*)",
+      "source": "/((?!api/|assets/).*)",
       "destination": "/index.html"
     }
   ]

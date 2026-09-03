@@ -4,7 +4,7 @@
   <h3 align="center">Real Estate RAG Assistant</h3>
 
   <p align="center">
-    A local-first research app that lets users upload real estate PDFs, ingest them into ChromaDB, and ask grounded questions with source citations.
+    Upload real estate PDFs, ingest them in your browser, and ask grounded questions with source citations. The whole app deploys on Vercel.
   </p>
 </div>
 
@@ -16,9 +16,9 @@ https://github.com/user-attachments/assets/939d6f74-de6a-4216-bea0-16931297d938
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Real Estate RAG Assistant helps users explore housing and market documents through a clean chat interface. Users upload PDF reports, homebuying guides, and market analyses directly in the app, ingest them into a local vector database, and then ask natural language questions.
+Real Estate RAG Assistant helps users explore housing and market documents through a chat interface. Users upload PDF reports, ingest them in the current browser session, and ask natural language questions.
 
-The app retrieves the most relevant document chunks, sends them to Groq for answer generation, and returns a concise response with supporting source citations. It is designed to run locally, with free local embeddings and persistent ChromaDB storage.
+The app retrieves the most relevant passages from those PDFs, sends them to Groq, and returns a concise answer with source citations. Files live in the tab until you refresh — that is what makes a single Vercel Hobby deploy possible without a database.
 
 ### Built With
 
@@ -36,7 +36,6 @@ The app retrieves the most relevant document chunks, sends them to Groq for answ
 
 ### Prerequisites
 
-* Python 3.10 or later
 * Node.js 18 or later
 * A [Groq API key](https://console.groq.com)
 
@@ -47,77 +46,42 @@ The app retrieves the most relevant document chunks, sends them to Groq for answ
    git clone https://github.com/sanskritim05/real-estate-rag-assistant
    cd real-estate-rag-assistant
    ```
-2. Set up the backend
-   ```sh
-   cd backend
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   cp .env.example .env
-   ```
-3. Add your Groq credentials to `backend/.env`
-   ```sh
-   GROQ_API_KEY=your_groq_api_key
-   GROQ_MODEL=llama-3.1-8b-instant
-   BACKEND_CORS_ORIGINS=http://localhost:5173
-   ```
-4. Start the backend
-   ```sh
-   python -m uvicorn main:app --reload
-   ```
-5. In a new terminal, set up the frontend
+2. Set up the app
    ```sh
    cd frontend
    npm install
+   cp .env.example .env
+   ```
+3. Add your Groq key to `frontend/.env`
+   ```sh
+   GROQ_API_KEY=your_groq_api_key
+   GROQ_MODEL=llama-3.1-8b-instant
+   ```
+   This key is only used by the local `/api/ask` server. It is not exposed to the browser.
+4. Start the app
+   ```sh
    npm run dev
    ```
-6. Open in your browser
+5. Open in your browser
    ```text
    http://localhost:5173
    ```
 
 <!-- DEPLOY -->
-## Deploy
+## Deploy on Vercel
 
-Use **Render for the API** and **Vercel for the UI**. Deploy Render first so you have an API URL to give Vercel.
-
-### 1. Render (backend)
-
-The API writes PDFs and ChromaDB to disk, so it needs a [persistent disk](https://render.com/docs/disks) (Starter plan or higher).
+The full app runs on **Vercel Hobby** (GitHub login, no credit card). PDFs stay in the visitor's browser for that tab session.
 
 1. Push this repo to GitHub.
-2. In [Render](https://dashboard.render.com), create a **Blueprint** from the repo. It will read `render.yaml`.
-   Or create a **Web Service** manually:
-   - Root directory: `backend`
-   - Build: `pip install -r requirements.txt`
-   - Start: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-   - Instance: Starter (or larger if ingest runs out of memory)
-3. Add a 1 GB disk mounted at `/var/data`.
-4. Set environment variables:
+2. Import it in [Vercel](https://vercel.com/new). `vercel.json` builds `frontend/` and hosts `/api/ask`.
+3. Add these environment variables, then deploy:
    ```text
    GROQ_API_KEY=your_groq_api_key
    GROQ_MODEL=llama-3.1-8b-instant
-   DATA_DIR=/var/data
-   BACKEND_CORS_ORIGINS=https://your-app.vercel.app
-   BACKEND_CORS_ORIGIN_REGEX=https://.*\.vercel\.app
    ```
-   If you do not have the Vercel URL yet, add it after the frontend deploy and restart the service.
-5. Copy the Render URL, for example `https://real-estate-rag-api.onrender.com`.
-6. Open `/health` on that URL and confirm it returns `{"status":"ok"}`. The first boot can take a few minutes while the embedding model downloads.
+4. Open the Vercel URL, upload PDFs, ingest, and ask.
 
-### 2. Vercel (frontend)
-
-1. Import the same GitHub repo in [Vercel](https://vercel.com/new). `vercel.json` already builds `frontend/`.
-2. Add this **Production** environment variable:
-   ```text
-   VITE_API_BASE_URL=https://real-estate-rag-api.onrender.com
-   ```
-   Use your real Render URL. No trailing slash.
-3. Deploy. Copy the Vercel URL (for example `https://your-app.vercel.app`).
-4. Go back to Render and set `BACKEND_CORS_ORIGINS` to that Vercel URL, then restart the API.
-5. Redeploy Vercel if you change `VITE_API_BASE_URL`. Vite inlines it at **build** time.
-
-Local development is unchanged: backend on port 8000, frontend on 5173.
+Refreshing the page clears uploaded files. That is expected.
 
 <!-- USAGE -->
 ## Usage
@@ -150,46 +114,32 @@ Local development is unchanged: backend on port 8000, frontend on 5173.
 
 ```text
 real-estate-rag-assistant/
-├── backend/                 API (FastAPI)
-│   ├── main.py              routes
-│   ├── ingest.py            PDF upload + chunking + embeddings
-│   ├── retriever.py         ChromaDB search
-│   ├── rag_chain.py         Groq answer generation
-│   ├── data/                runtime files (not committed)
-│   │   ├── uploads/         user PDFs
-│   │   └── chroma/          vector store
-│   ├── .env.example
-│   ├── requirements.txt
-│   └── runtime.txt
+├── api/                     Vercel function
+│   ├── ask.js               Groq answer endpoint
+│   └── ask-handler.js       shared Groq logic
 ├── frontend/                UI (Vite + React)
 │   ├── public/favicon.svg
 │   └── src/
 │       ├── components/      sidebar, chat, sources
-│       ├── lib/api.ts       backend client
+│       ├── lib/             PDF ingest, retrieval, API client
 │       ├── App.tsx
 │       └── styles.css
-├── vercel.json              Vercel → frontend
-├── render.yaml              Render → backend
+├── backend/                 optional original FastAPI app (not used on Vercel)
+├── vercel.json
 ├── demo-for-project.mp4
 └── README.md
 ```
 
 ## How It Works
 
-1. Upload: users upload PDFs directly through the app.
-2. Ingest: the backend parses the uploaded PDFs with PyMuPDF.
-3. Embed: the text is chunked and embedded locally with `sentence-transformers/all-MiniLM-L6-v2`.
-4. Retrieve: relevant chunks are pulled from ChromaDB.
-5. Generate: Groq answers using only the retrieved context.
+1. Upload: PDFs stay in this browser tab.
+2. Ingest: the browser extracts text and splits it into chunks.
+3. Ask: the most relevant chunks are sent to `/api/ask`.
+4. Generate: Groq answers using only that context.
 
-## API Endpoints
+## API
 
-* `POST /upload-documents` -> upload one or more PDF files
-* `POST /ask` -> ask a question and receive `{ answer, sources }`
-* `POST /ingest` -> ingest uploaded PDFs into ChromaDB
-* `GET /documents` -> list uploaded PDFs
-* `GET /stats` -> return document and chunk counts
-* `GET /health` -> health check
+* `POST /api/ask` -> `{ question, chunks }` returns `{ answer, sources }`
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [Python.org]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
