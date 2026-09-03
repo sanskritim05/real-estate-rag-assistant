@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { StatusBanner, type Status } from "@/components/StatusBanner";
 import { SourceCard, groupSources } from "@/components/SourceCard";
 import { askQuestion, TimeoutError, type SourceItem } from "@/lib/api";
 import { retrieveChunks } from "@/lib/retrieve";
-import { cn } from "@/lib/utils";
 
 type Message = {
   id: string;
@@ -16,14 +14,10 @@ type Message = {
 
 function TypingDots() {
   return (
-    <div className="flex items-center gap-1.5 rounded-3xl border-2 border-border bg-card px-4 py-3 shadow-soft">
-      {[0, 1, 2].map((index) => (
-        <span
-          key={index}
-          className="typing-dot size-2 rounded-full bg-primary"
-          style={{ animationDelay: `${index * 0.15}s` }}
-        />
-      ))}
+    <div className="typing">
+      <span className="typing-dot" />
+      <span className="typing-dot" />
+      <span className="typing-dot" />
     </div>
   );
 }
@@ -34,39 +28,31 @@ function AssistantExtras({ message }: { message: Message }) {
   const groups = groupSources(message.sources ?? []);
 
   return (
-    <div className="mt-2 space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="secondary"
-          size="sm"
-          className="rounded-full border-2 border-border text-xs font-bold"
+    <div className="assistant-extras">
+      <div className="extra-actions">
+        <button
+          type="button"
+          className="chip-button"
           onClick={() => {
             void navigator.clipboard.writeText(message.content);
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}
         >
-          {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+          {copied ? <Check className="icon" /> : <Copy className="icon" />}
           {copied ? "Copied" : "Copy"}
-        </Button>
+        </button>
 
         {groups.length > 0 && (
-          <Button
-            variant="secondary"
-            size="sm"
-            className="rounded-full border-2 border-border text-xs font-bold"
-            onClick={() => setShowSources((value) => !value)}
-          >
+          <button type="button" className="chip-button" onClick={() => setShowSources((value) => !value)}>
             {showSources ? "Hide Sources" : "Show Sources"}
-            <span className="ml-1 rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground">
-              {groups.length}
-            </span>
-          </Button>
+            <span className="count-pill">{groups.length}</span>
+          </button>
         )}
       </div>
 
       {showSources && (
-        <div className="space-y-2">
+        <div className="source-stack">
           {groups.map((group) => (
             <SourceCard key={group.filename} group={group} />
           ))}
@@ -133,29 +119,17 @@ export function ChatPanel({ chunks }: { chunks: SourceItem[] }) {
   };
 
   return (
-    <div className="card-cute flex min-h-[32rem] flex-1 flex-col overflow-hidden">
-      <div className="paper-dots flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
+    <div className="panel chat-panel">
+      <div className="transcript">
         {messages.length === 0 && !waiting && (
-          <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
-            <p className="max-w-xs text-sm text-muted-foreground">
-              Ask anything about your uploaded reports - answers come straight from the pages.
-            </p>
+          <div className="empty-chat">
+            <p>Ask anything about your uploaded reports - answers come straight from the pages.</p>
           </div>
         )}
         {messages.map((message) => (
-          <div
-            key={message.id}
-            className={cn("animate-pop-in flex", message.role === "user" ? "justify-end" : "justify-start")}
-          >
-            <div className={cn("max-w-[85%]", message.role === "user" && "flex flex-col items-end")}>
-              <div
-                className={cn(
-                  "rounded-3xl border-2 px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap shadow-soft",
-                  message.role === "user"
-                    ? "rounded-br-lg border-border bg-primary text-primary-foreground"
-                    : "rounded-bl-lg border-border bg-card text-card-foreground",
-                )}
-              >
+          <div key={message.id} className={message.role === "user" ? "row row-user" : "row row-assistant"}>
+            <div className={message.role === "user" ? "bubble-wrap bubble-wrap-user" : "bubble-wrap"}>
+              <div className={message.role === "user" ? "bubble bubble-user" : "bubble bubble-assistant"}>
                 {message.content}
               </div>
               {message.role === "assistant" && <AssistantExtras message={message} />}
@@ -164,16 +138,16 @@ export function ChatPanel({ chunks }: { chunks: SourceItem[] }) {
         ))}
 
         {waiting && (
-          <div className="flex justify-start">
+          <div className="row row-assistant">
             <TypingDots />
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
-      <div className="space-y-2 border-t-2 border-border bg-muted/50 p-3 sm:p-4">
+      <div className="composer">
         <StatusBanner status={error} />
-        <div className="flex items-end gap-2">
+        <div className="composer-row">
           <textarea
             ref={textareaRef}
             value={input}
@@ -186,15 +160,22 @@ export function ChatPanel({ chunks }: { chunks: SourceItem[] }) {
             }}
             rows={1}
             placeholder="Ask about market trends, rent growth, inventory shifts, or where the reports disagree..."
-            className="max-h-44 flex-1 resize-none rounded-2xl border-2 border-border bg-card px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-primary"
+            className="question-box"
           />
-          <Button
-            className="h-12 rounded-2xl border-2 border-border px-5 font-bold shadow-soft"
+          <button
+            type="button"
+            className="button send-button"
             disabled={waiting || input.trim().length === 0}
             onClick={() => void send()}
           >
-            {waiting ? "Thinking..." : <>Send <Send className="size-4" /></>}
-          </Button>
+            {waiting ? (
+              "Thinking..."
+            ) : (
+              <>
+                Send <Send className="icon" />
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

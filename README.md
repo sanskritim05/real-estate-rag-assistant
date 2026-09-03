@@ -19,14 +19,9 @@ The app retrieves the most relevant passages from those PDFs, sends them to Groq
 
 ### Built With
 
-* [![Python][Python.org]][Python-url]
-* [![FastAPI][FastAPI.tiangolo.com]][FastAPI-url]
 * [![React][React.dev]][React-url]
 * [![Vite][Vite.dev]][Vite-url]
-* [![LangChain][LangChain]][LangChain-url]
 * [![Groq][Groq.com]][Groq-url]
-* [![ChromaDB][ChromaDB]][ChromaDB-url]
-* [![Tailwind CSS][TailwindCSS.com]][TailwindCSS-url]
 
 <!-- GETTING STARTED -->
 ## Getting Started
