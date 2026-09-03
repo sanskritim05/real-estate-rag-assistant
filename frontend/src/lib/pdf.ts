@@ -10,6 +10,49 @@ export type SessionDocument = {
   chunks: SourceItem[];
 };
 
+function polyfillPdfEnvironment() {
+  const promiseCtor = Promise as typeof Promise & {
+    withResolvers?: () => {
+      promise: Promise<unknown>;
+      resolve: (value?: unknown) => void;
+      reject: (reason?: unknown) => void;
+    };
+  };
+
+  if (typeof promiseCtor.withResolvers !== "function") {
+    promiseCtor.withResolvers = function withResolvers() {
+      let resolve!: (value?: unknown) => void;
+      let reject!: (reason?: unknown) => void;
+      const promise = new Promise((res, rej) => {
+        resolve = res;
+        reject = rej;
+      });
+      return { promise, resolve, reject };
+    };
+  }
+
+  const streamProto = ReadableStream.prototype as ReadableStream & {
+    [Symbol.asyncIterator]?: () => AsyncIterator<unknown>;
+  };
+
+  if (typeof streamProto[Symbol.asyncIterator] !== "function") {
+    streamProto[Symbol.asyncIterator] = async function* asyncIterator() {
+      const reader = this.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            return;
+          }
+          yield value;
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    };
+  }
+}
+
 function splitText(text: string): string[] {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (!normalized) {
@@ -32,20 +75,43 @@ function splitText(text: string): string[] {
   return pieces.filter(Boolean);
 }
 
+function itemText(item: unknown): string {
+  if (item && typeof item === "object" && "str" in item && typeof item.str === "string") {
+    return item.str;
+  }
+  return "";
+}
+
 async function extractPages(file: File): Promise<Array<{ page: number; text: string }>> {
-  const pdfjs = await import("pdfjs-dist");
-  const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
-  pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
+  polyfillPdfEnvironment();
+
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const worker = await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url");
+  const getDocument = pdfjs.getDocument;
+  const GlobalWorkerOptions = pdfjs.GlobalWorkerOptions;
+  const workerSrc = typeof worker.default === "string" ? worker.default : String(worker.default ?? worker);
+
+  if (typeof getDocument !== "function") {
+    throw new Error("PDF engine failed to load. Refresh the page and try again.");
+  }
+
+  GlobalWorkerOptions.workerSrc = workerSrc;
 
   const data = new Uint8Array(await file.arrayBuffer());
-  const pdf = await pdfjs.getDocument({ data }).promise;
+  const loadingTask = getDocument({
+    data,
+    disableWorker: true,
+    isEvalSupported: false,
+  });
+  const pdf = await loadingTask.promise;
   const pages: Array<{ page: number; text: string }> = [];
 
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
     const page = await pdf.getPage(pageNumber);
     const content = await page.getTextContent();
-    const text = content.items
-      .map((item) => ("str" in item ? item.str : ""))
+    const items = Array.isArray(content.items) ? content.items : [];
+    const text = items
+      .map(itemText)
       .join(" ")
       .replace(/\s+/g, " ")
       .trim();
@@ -54,6 +120,7 @@ async function extractPages(file: File): Promise<Array<{ page: number; text: str
     }
   }
 
+  await pdf.destroy();
   return pages;
 }
 
