@@ -331,6 +331,7 @@ button:disabled {
 
 .doc-copy {
   min-width: 0;
+  flex: 1;
 }
 
 .doc-name {
@@ -345,6 +346,26 @@ button:disabled {
   margin-top: 2px;
   color: #8a735c;
   font-size: 12px;
+}
+
+.doc-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 2px solid #e4d4b8;
+  border-radius: 999px;
+  background: #fffdf9;
+  color: #6b5133;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.doc-remove:hover:not(:disabled) {
+  background: #f8e4dc;
+  border-color: #d4a090;
+  color: #a0453a;
 }
 
 .banner {

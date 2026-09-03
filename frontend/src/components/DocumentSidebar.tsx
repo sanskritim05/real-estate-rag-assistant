@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { FileText, Home, Loader2, UploadCloud } from "lucide-react";
+import { FileText, Home, Loader2, UploadCloud, X } from "lucide-react";
 import { StatusBanner, type Status } from "@/components/StatusBanner";
 import { formatSize } from "@/lib/api";
 import { filesToDocuments, ingestDocuments, mergeDocuments, type SessionDocument } from "@/lib/pdf";
@@ -47,6 +47,18 @@ export function DocumentSidebar({
     } finally {
       setUploading(false);
     }
+  };
+
+  const onRemove = (filename: string) => {
+    const next = documents.filter((document) => document.filename !== filename);
+    onDocumentsChange(next);
+    if (next.length === 0 || next.every((document) => document.chunks.length === 0)) {
+      onIngestedChange(false);
+    }
+    setStatus({
+      tone: "success",
+      message: `${filename} removed.`,
+    });
   };
 
   const onIngest = async () => {
@@ -141,6 +153,16 @@ export function DocumentSidebar({
                 <p className="doc-name">{document.filename}</p>
                 <p className="doc-size">{formatSize(document.size)}</p>
               </div>
+              <button
+                type="button"
+                className="doc-remove"
+                disabled={uploading || ingesting}
+                aria-label={`Remove ${document.filename}`}
+                onClick={() => onRemove(document.filename)}
+              >
+                <X className="icon" />
+                Remove
+              </button>
             </div>
           ))
         )}
