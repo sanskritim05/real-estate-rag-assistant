@@ -60,7 +60,7 @@ async function answerWithGroq({ apiKey, model, question, chunks }) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: model || "llama-3.1-8b-instant",
+      model: model || "openai/gpt-oss-20b",
       temperature: 0.1,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
