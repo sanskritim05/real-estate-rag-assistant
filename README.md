@@ -64,14 +64,18 @@ The app retrieves the most relevant passages from those PDFs, sends them to Groq
 
 The full app runs on **Vercel Hobby** (GitHub login, no credit card). PDFs stay in the visitor's browser for that tab session.
 
+Vercel may auto-detect a FastAPI `backend/` folder. **Do not add that service.** This app is only the Vite frontend plus `/api/ask`.
+
 1. Push this repo to GitHub.
-2. Import it in [Vercel](https://vercel.com/new). `vercel.json` builds `frontend/` and hosts `/api/ask`.
-3. Add these environment variables, then deploy:
+2. Import it in [Vercel](https://vercel.com/new).
+3. If you see two services (frontend Vite and backend FastAPI), **remove the FastAPI / backend service**. Keep only `frontend` (Vite).
+4. Root Directory can stay empty (repo root). `vercel.json` already points at `frontend/`.
+5. Add environment variables, then deploy:
    ```text
    GROQ_API_KEY=your_groq_api_key
    GROQ_MODEL=llama-3.1-8b-instant
    ```
-4. Open the Vercel URL, upload PDFs, ingest, and ask.
+6. Open the Vercel URL, upload PDFs, ingest, and ask.
 
 Refreshing the page clears uploaded files. That is expected.
 
@@ -106,19 +110,12 @@ Refreshing the page clears uploaded files. That is expected.
 
 ```text
 real-estate-rag-assistant/
-├── api/                     Vercel function
-│   ├── ask.js               Groq answer endpoint
-│   └── ask-handler.js       shared Groq logic
-├── frontend/                UI (Vite + React)
+├── frontend/
+│   ├── api/                 Groq `/api/ask` function
 │   ├── public/favicon.svg
 │   └── src/
-│       ├── components/      sidebar, chat, sources
-│       ├── lib/             PDF ingest, retrieval, API client
-│       ├── App.tsx
-│       └── styles.css
-├── backend/                 optional original FastAPI app (not used on Vercel)
+├── backend/                 not used on Vercel
 ├── vercel.json
-├── demo-for-project.mp4
 └── README.md
 ```
 

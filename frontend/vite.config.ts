@@ -26,7 +26,7 @@ function readJsonBody(req: import("node:http").IncomingMessage): Promise<unknown
 }
 
 function groqAskPlugin(apiKey: string, model: string) {
-  const { answerWithGroq } = require(path.resolve(__dirname, "../api/ask-handler.js")) as {
+        const { answerWithGroq } = require(path.resolve(__dirname, "api/ask-handler.js")) as {
     answerWithGroq: (input: {
       apiKey?: string;
       model?: string;

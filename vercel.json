@@ -1,17 +1,8 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm install --include=dev --prefix frontend",
-  "buildCommand": "npm run build --prefix frontend",
-  "outputDirectory": "frontend/dist",
-  "functions": {
-    "api/ask.js": {
-      "maxDuration": 60
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/((?!api/|assets/).*)",
-      "destination": "/index.html"
-    }
-  ]
+  }
 }
