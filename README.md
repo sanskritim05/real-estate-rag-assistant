@@ -8,9 +8,6 @@
   </p>
 </div>
 
-## Demo
-https://github.com/user-attachments/assets/939d6f74-de6a-4216-bea0-16931297d938
-
 
 
 <!-- ABOUT THE PROJECT -->
