@@ -120,7 +120,6 @@ async function extractPages(file: File): Promise<Array<{ page: number; text: str
     }
   }
 
-  await pdf.destroy();
   return pages;
 }
 
