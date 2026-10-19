@@ -59,27 +59,6 @@ The app retrieves the most relevant passages from those PDFs, sends them to Groq
    http://localhost:5173
    ```
 
-<!-- DEPLOY -->
-## Deploy on Vercel
-
-The full app runs on **Vercel Hobby** (GitHub login, no credit card). PDFs stay in the visitor's browser for that tab session.
-
-Vercel may auto-detect a FastAPI `backend/` folder. **Do not add that service.** This app is only the Vite frontend plus `/api/ask`.
-
-1. Push this repo to GitHub.
-2. Import it in [Vercel](https://vercel.com/new).
-3. If you see two services (frontend Vite and backend FastAPI), **remove the FastAPI / backend service**. Keep only `frontend` (Vite).
-4. Root Directory can stay empty (repo root). `vercel.json` already points at `frontend/`.
-5. Add environment variables, then deploy:
-   ```text
-   GROQ_API_KEY=your_groq_api_key
-   GROQ_MODEL=llama-3.1-8b-instant
-   ```
-6. Open the Vercel URL, upload PDFs, ingest, and ask.
-
-Refreshing the page clears uploaded files. That is expected.
-
-<!-- USAGE -->
 ## Usage
 
 1. Open the app in your browser.
